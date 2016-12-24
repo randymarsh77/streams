@@ -6,4 +6,38 @@ public extension IReadableStream
 		}
 		return chunks
 	}
+
+	public func overlappingChunks(of: Int, advancingBy: Int) -> ReadableStream<Array<Self.ChunkType>> {
+		let overlappingChunkStream = OverlappingChunkStream<ChunkType>(of, advancingBy)
+		_ = self.chunks(of: advancingBy).subscribe {
+			overlappingChunkStream.accumulate($0)
+		}
+		return ReadableStream(overlappingChunkStream)
+	}
+}
+
+internal class OverlappingChunkStream<T> : Stream<[T]>
+{
+	internal init(_ chunkSize: Int, _ advanceBy: Int) {
+		_chunkSize = chunkSize
+		_advanceBy = advanceBy
+	}
+
+	func accumulate(_ data: [T]) {
+		let toFill = min(data.count, _chunkSize - _accumulator.count)
+		let leftovers = toFill < data.count ? data[toFill...data.count - 1] : []
+		_accumulator.append(contentsOf: data[0...toFill - 1])
+		if (_accumulator.count == _chunkSize) {
+			publish(_accumulator)
+			_accumulator = Array(_accumulator[_advanceBy..._chunkSize - 1])
+		}
+
+		if (leftovers.count != 0) {
+			accumulate(Array(leftovers))
+		}
+	}
+
+	let _chunkSize: Int
+	let _advanceBy: Int
+	var _accumulator: [T] = []
 }
