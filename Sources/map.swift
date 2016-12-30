@@ -4,6 +4,10 @@ public typealias ManyToOneMapping<S, T> = ([S]) -> (T?, [S])
 
 public typealias OneToManyMapping<S, T> = (S) -> [T]
 
+public typealias MutatingMapping<S> = (_ :inout S) -> ()
+
+public typealias MutatingOneToOneMapping<S, T> = (_ :inout S) -> T
+
 public extension IReadableStream
 {
 	public func map<T>(_ mapping: @escaping OneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
@@ -29,6 +33,25 @@ public extension IReadableStream
 			for item in many {
 				mapped.publish(item)
 			}
+		}
+		return ReadableStream(mapped)
+	}
+
+	public func map(_ mapping: @escaping MutatingMapping<ChunkType>) -> ReadableStream<ChunkType> {
+		let mapped: Stream<ChunkType> = Stream()
+		_ = self.subscribe { data in
+			var mutableData = data
+			mapping(&mutableData)
+			mapped.publish(mutableData)
+		}
+		return ReadableStream(mapped)
+	}
+
+	public func map<T>(_ mapping: @escaping MutatingOneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+		let mapped: Stream<T> = Stream()
+		_ = self.subscribe { data in
+			var mutableData = data
+			mapped.publish(mapping(&mutableData))
 		}
 		return ReadableStream(mapped)
 	}
