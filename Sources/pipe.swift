@@ -1,19 +1,19 @@
 public extension IReadableStream
 {
-	public func pipe<S: IWriteableStream, T: IReadableStream>(to: S) -> T where S.ChunkType == Self.ChunkType, T.ChunkType == Self.ChunkType {
+	public func pipe<T: IWriteableStream>(to: T) -> ReadableStream<Self.ChunkType> where T.ChunkType == Self.ChunkType {
 		_ = self.subscribe { chunk in
 			to.publish(chunk)
 		}
-		return self as! T
+		return ReadableStream(self)
 	}
 }
 
 public extension IWriteableStream
 {
-	public func pipe<S: IReadableStream, T: IWriteableStream>(from: S) -> T where S.ChunkType == Self.ChunkType, T.ChunkType == Self.ChunkType {
+	public func pipe<T: IReadableStream>(from: T) -> WriteableStream<Self.ChunkType> where T.ChunkType == Self.ChunkType {
 		_ = from.subscribe { chunk in
 			self.publish(chunk)
 		}
-		return self as! T
+		return WriteableStream(self)
 	}
 }
