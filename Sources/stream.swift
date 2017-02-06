@@ -1,3 +1,4 @@
+import IDisposable
 import Scope
 
 public class Stream<T> : IStream
@@ -5,6 +6,13 @@ public class Stream<T> : IStream
 	public typealias ChunkType = T
 
 	public init() {
+	}
+
+	public func dispose() {
+		self.subscribers = [Subscriber<ChunkType>]()
+		for disposable in downstreamDisposables {
+			disposable.dispose()
+		}
 	}
 
 	public func publish(_ chunk: ChunkType) -> Void {
@@ -28,7 +36,12 @@ public class Stream<T> : IStream
 		self.subscribers.remove(at: i!)
 	}
 
+	public func addDownstreamDisposable(_ disposable: IDisposable) {
+		downstreamDisposables.append(disposable)
+	}
+
 	var subscribers: [Subscriber<ChunkType>] = [Subscriber<ChunkType>]()
+	var downstreamDisposables: [IDisposable] = [IDisposable]()
 }
 
 internal class Subscriber<T>

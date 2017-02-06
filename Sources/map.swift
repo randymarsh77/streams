@@ -15,6 +15,7 @@ public extension IReadableStream
 		_ = self.subscribe { data in
 			mapped.publish(mapping(data))
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 
@@ -23,6 +24,7 @@ public extension IReadableStream
 		_ = self.subscribe { data in
 			mapped.accumulate(data)
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 
@@ -34,6 +36,7 @@ public extension IReadableStream
 				mapped.publish(item)
 			}
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 
@@ -44,6 +47,7 @@ public extension IReadableStream
 			mapping(&mutableData)
 			mapped.publish(mutableData)
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 
@@ -53,6 +57,7 @@ public extension IReadableStream
 			var mutableData = data
 			mapped.publish(mapping(&mutableData))
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 }

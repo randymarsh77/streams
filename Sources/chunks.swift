@@ -12,6 +12,7 @@ public extension IReadableStream
 		_ = self.chunks(of: advancingBy).subscribe {
 			overlappingChunkStream.accumulate($0)
 		}
+		addDownstreamDisposable(overlappingChunkStream)
 		return ReadableStream(overlappingChunkStream)
 	}
 }

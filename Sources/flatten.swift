@@ -7,6 +7,7 @@ public extension IReadableStream where Self.ChunkType: Sequence
 				mapped.publish(item)
 			}
 		}
+		addDownstreamDisposable(mapped)
 		return ReadableStream(mapped)
 	}
 }
