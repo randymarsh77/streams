@@ -1,3 +1,4 @@
+import IDisposable
 import Scope
 
 public protocol IReadableEventingStream : IReadableStream
@@ -30,6 +31,12 @@ public struct ReadableEventingStream<S, T> : IReadableEventingStream
 	public init<U: IReadableEventingStream>(_ delegate: U) where U.ChunkType == ChunkType, U.EventType == EventType {
 		_subscribe = delegate.subscribe
 		_on = delegate.on
+		_addDownstreamDisposable = delegate.addDownstreamDisposable
+		_dispose = delegate.dispose
+	}
+
+	public func dispose() {
+		_dispose()
 	}
 
 	public func subscribe(_ onChunk: @escaping (ChunkType) -> Void) -> Scope {
@@ -40,8 +47,14 @@ public struct ReadableEventingStream<S, T> : IReadableEventingStream
 		return _on(onEvent)
 	}
 
+	public func addDownstreamDisposable(_ disposable: IDisposable) {
+		_addDownstreamDisposable(disposable)
+	}
+
 	let _subscribe: (_ onChunk: @escaping (ChunkType) -> Void) -> Scope
 	let _on: (_ onEvent: @escaping (EventType) -> Void) -> Scope
+	let _addDownstreamDisposable: (IDisposable) -> Void
+	let _dispose: () -> Void
 }
 
 public struct WriteableEventingStream<S, T> : IWriteableEventingStream
@@ -83,6 +96,10 @@ public class EventingStream<S, T> : IEventingStream
 		base = stream
 	}
 
+	public func dispose() {
+		base.dispose()
+	}
+
 	public func raise(_ event: EventType)
 	{
 		base.publish(.Event(event))
@@ -119,6 +136,10 @@ public class EventingStream<S, T> : IEventingStream
 				break
 			}
 		}
+	}
+
+	public func addDownstreamDisposable(_ disposable: IDisposable) {
+		base.addDownstreamDisposable(disposable)
 	}
 }
 
