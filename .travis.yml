@@ -8,4 +8,6 @@ before_script:
 
 script:
   - swift build
+
+after_success:
   - swiftx update-build-config --owner randymarsh77 --configPath builds/swift/config
