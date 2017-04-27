@@ -1,5 +1,11 @@
 language: objective-c
 osx_image: xcode8.2
+node_js:
+  - "6"
+
+before_script:
+  - npm install -g swiftx
 
 script:
   - swift build
+  - swiftx update-build-config --owner randymarsh77 --configPath builds/swift/config
