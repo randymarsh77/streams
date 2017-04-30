@@ -11,3 +11,8 @@ script:
 
 after_success:
   - swiftx update-build-config --owner randymarsh77 --configPath builds/swift/config
+  - swiftx update-dependency-graph --owner randymarsh77 --configPath builds/swift/config
+  - swiftx trigger-downstream-builds --owner randymarsh77 --configPath builds/swift/config
+
+after_failure:
+  - swiftx trigger-downstream-builds --owner randymarsh77 --configPath builds/swift/config --force
