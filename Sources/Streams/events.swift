@@ -145,7 +145,7 @@ public class EventingStream<S, T> : IEventingStream
 
 public extension IStream
 {
-	public func asEventing<T>() -> EventingStream<T, Self.ChunkType> {
+	func asEventing<T>() -> EventingStream<T, Self.ChunkType> {
 		let proxy: Stream<EventingStreamContext<T, Self.ChunkType>> = Stream()
 		_ = self.subscribe { (chunk) in
 			proxy.publish(.Data(chunk))

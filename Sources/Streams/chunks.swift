@@ -1,13 +1,13 @@
 public extension IReadableStream
 {
-	public func chunks(of: Int) -> ReadableStream<Array<Self.ChunkType>> {
+	func chunks(of: Int) -> ReadableStream<Array<Self.ChunkType>> {
 		let chunks = self.map { (elements: [ChunkType]) in
 			return elements.count == of ? (elements, []) : (nil, elements)
 		}
 		return chunks
 	}
 
-	public func overlappingChunks(of: Int, advancingBy: Int) -> ReadableStream<Array<Self.ChunkType>> {
+	func overlappingChunks(of: Int, advancingBy: Int) -> ReadableStream<Array<Self.ChunkType>> {
 		let overlappingChunkStream = OverlappingChunkStream<ChunkType>(of, advancingBy)
 		_ = self.chunks(of: advancingBy).subscribe {
 			overlappingChunkStream.accumulate($0)

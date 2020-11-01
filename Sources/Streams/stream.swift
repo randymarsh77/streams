@@ -30,7 +30,7 @@ public class Stream<T> : IStream
 
 	func removeSubscriber(subscriber: Subscriber<ChunkType>) -> Void
 	{
-		let i = self.subscribers.index(where: { (x) -> Bool in
+		let i = self.subscribers.firstIndex(where: { (x) -> Bool in
 			return x === subscriber
 		})
 		self.subscribers.remove(at: i!)

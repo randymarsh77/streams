@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "IDisposable",
+        "repositoryURL": "https://github.com/randymarsh77/idisposable",
+        "state": {
+          "branch": "master",
+          "revision": "9d2d4c032fdca4d0d81ec191bfcc71c91e88b178",
+          "version": null
+        }
+      },
+      {
+        "package": "Scope",
+        "repositoryURL": "https://github.com/randymarsh77/scope",
+        "state": {
+          "branch": "master",
+          "revision": "3c797592601ba184e0b3efec6f3c9fba125a000c",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

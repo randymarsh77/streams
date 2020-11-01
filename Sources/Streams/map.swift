@@ -10,7 +10,7 @@ public typealias MutatingOneToOneMapping<S, T> = (_ :inout S) -> T
 
 public extension IReadableStream
 {
-	public func map<T>(_ mapping: @escaping OneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+	func map<T>(_ mapping: @escaping OneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
 		let mapped: Stream<T> = Stream()
 		_ = self.subscribe { data in
 			mapped.publish(mapping(data))
@@ -19,7 +19,7 @@ public extension IReadableStream
 		return ReadableStream(mapped)
 	}
 
-	public func map<T>(_ mapping: @escaping ManyToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+	func map<T>(_ mapping: @escaping ManyToOneMapping<ChunkType, T>) -> ReadableStream<T> {
 		let mapped = ManyToOneMappingStream(mapping)
 		_ = self.subscribe { data in
 			mapped.accumulate(data)
@@ -28,7 +28,7 @@ public extension IReadableStream
 		return ReadableStream(mapped)
 	}
 
-	public func map<T>(_ mapping: @escaping OneToManyMapping<ChunkType, T>) -> ReadableStream<T> {
+	func map<T>(_ mapping: @escaping OneToManyMapping<ChunkType, T>) -> ReadableStream<T> {
 		let mapped: Stream<T> = Stream()
 		_ = self.subscribe { data in
 			let many = mapping(data)
@@ -40,7 +40,7 @@ public extension IReadableStream
 		return ReadableStream(mapped)
 	}
 
-	public func map(_ mapping: @escaping MutatingMapping<ChunkType>) -> ReadableStream<ChunkType> {
+	func map(_ mapping: @escaping MutatingMapping<ChunkType>) -> ReadableStream<ChunkType> {
 		let mapped: Stream<ChunkType> = Stream()
 		_ = self.subscribe { data in
 			var mutableData = data
@@ -51,7 +51,7 @@ public extension IReadableStream
 		return ReadableStream(mapped)
 	}
 
-	public func map<T>(_ mapping: @escaping MutatingOneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+	func map<T>(_ mapping: @escaping MutatingOneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
 		let mapped: Stream<T> = Stream()
 		_ = self.subscribe { data in
 			var mutableData = data
