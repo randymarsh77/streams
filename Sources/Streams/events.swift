@@ -32,7 +32,10 @@ public struct ReadableEventingStream<S, T> : IReadableEventingStream
 		_subscribe = delegate.subscribe
 		_on = delegate.on
 		_addDownstreamDisposable = delegate.addDownstreamDisposable
+		_addUpstreamDisposable = delegate.addUpstreamDisposable
+		_addDisposable = delegate.addDisposable
 		_dispose = delegate.dispose
+		_configureOwnershipSemantic = delegate.configureOwnershipSemantic
 	}
 
 	public func dispose() {
@@ -51,10 +54,25 @@ public struct ReadableEventingStream<S, T> : IReadableEventingStream
 		_addDownstreamDisposable(disposable)
 	}
 
+	public func addUpstreamDisposable(_ disposable: IDisposable) {
+		_addUpstreamDisposable(disposable)
+	}
+
+	public func addDisposable(_ disposable: IDisposable) {
+		_addDisposable(disposable)
+	}
+
+	public func configureOwnershipSemantic(_ semantic: OwnershipSemantic) {
+		_configureOwnershipSemantic(semantic)
+	}
+
 	let _subscribe: (_ onChunk: @escaping (ChunkType) -> Void) -> Scope
 	let _on: (_ onEvent: @escaping (EventType) -> Void) -> Scope
 	let _addDownstreamDisposable: (IDisposable) -> Void
+	let _addUpstreamDisposable: (IDisposable) -> Void
+	let _addDisposable: (IDisposable) -> Void
 	let _dispose: () -> Void
+	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> ()
 }
 
 public struct WriteableEventingStream<S, T> : IWriteableEventingStream
@@ -141,15 +159,33 @@ public class EventingStream<S, T> : IEventingStream
 	public func addDownstreamDisposable(_ disposable: IDisposable) {
 		base.addDownstreamDisposable(disposable)
 	}
+
+	public func addUpstreamDisposable(_ disposable: IDisposable) {
+		base.addUpstreamDisposable(disposable)
+	}
+
+	public func addDisposable(_ disposable: IDisposable) {
+		base.addDisposable(disposable)
+	}
+
+	public func disposeWith(_ disposable: IDisposable) -> EventingStream<S, T> {
+		base.addDisposable(disposable)
+		return self
+	}
+
+	public func configureOwnershipSemantic(_ semantic: OwnershipSemantic) {
+		base.configureOwnershipSemantic(semantic)
+	}
 }
 
 public extension IStream
 {
 	func asEventing<T>() -> EventingStream<T, Self.ChunkType> {
 		let proxy: Stream<EventingStreamContext<T, Self.ChunkType>> = Stream()
-		_ = self.subscribe { (chunk) in
+		let unsubscribe = self.subscribe { (chunk) in
 			proxy.publish(.Data(chunk))
 		}
 		return EventingStream(proxy)
+			.disposeWith(unsubscribe)
 	}
 }

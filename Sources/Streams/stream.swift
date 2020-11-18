@@ -9,8 +9,16 @@ public class Stream<T> : IStream
 	}
 
 	public func dispose() {
+		let disposables = self.disposables
+			+ (ownershipSemantic == .Chained || ownershipSemantic == .Source ? self.downstreamDisposables : [])
+			+ (ownershipSemantic == .Chained || ownershipSemantic == .Sink ? self.upstreamDisposables : [])
+
 		self.subscribers = [Subscriber<ChunkType>]()
-		for disposable in downstreamDisposables {
+		self.downstreamDisposables = [IDisposable]()
+		self.upstreamDisposables = [IDisposable]()
+		self.disposables = [IDisposable]()
+
+		for disposable in disposables {
 			disposable.dispose()
 		}
 	}
@@ -40,8 +48,23 @@ public class Stream<T> : IStream
 		downstreamDisposables.append(disposable)
 	}
 
+	public func addUpstreamDisposable(_ disposable: IDisposable) {
+		upstreamDisposables.append(disposable)
+	}
+
+	public func addDisposable(_ disposable: IDisposable) {
+		disposables.append(disposable)
+	}
+
+	public func configureOwnershipSemantic(_ semantic: OwnershipSemantic) {
+		ownershipSemantic = semantic
+	}
+
 	var subscribers: [Subscriber<ChunkType>] = [Subscriber<ChunkType>]()
+	var disposables: [IDisposable] = [IDisposable]()
 	var downstreamDisposables: [IDisposable] = [IDisposable]()
+	var upstreamDisposables: [IDisposable] = [IDisposable]()
+	var ownershipSemantic = OwnershipSemantic.Chained
 }
 
 internal class Subscriber<T>

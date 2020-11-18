@@ -8,6 +8,12 @@ public protocol IReadableStream : IDisposable
 	func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope
 
 	func addDownstreamDisposable(_ disposable: IDisposable)
+
+	func addUpstreamDisposable(_ disposable: IDisposable)
+
+	func addDisposable(_ disposable: IDisposable)
+
+	func configureOwnershipSemantic(_ semantic: OwnershipSemantic)
 }
 
 public protocol IWriteableStream
@@ -29,7 +35,10 @@ public struct ReadableStream<T>: IReadableStream
 	public init<S: IReadableStream>(_ delegate: S) where S.ChunkType == T {
 		_subscribe = delegate.subscribe
 		_addDownstreamDisposable = delegate.addDownstreamDisposable
+		_addUpstreamDisposable = delegate.addUpstreamDisposable
+		_addDisposable = delegate.addDisposable
 		_dispose = delegate.dispose
+		_configureOwnershipSemantic = delegate.configureOwnershipSemantic
 	}
 
 	public func dispose() {
@@ -44,9 +53,29 @@ public struct ReadableStream<T>: IReadableStream
 		_addDownstreamDisposable(disposable)
 	}
 
+	public func addUpstreamDisposable(_ disposable: IDisposable) {
+		_addUpstreamDisposable(disposable)
+	}
+
+	public func addDisposable(_ disposable: IDisposable) {
+		_addDisposable(disposable)
+	}
+
+	public func disposeWith(_ disposable: IDisposable) -> ReadableStream<T> {
+		_addDisposable(disposable)
+		return self
+	}
+
+	public func configureOwnershipSemantic(_ semantic: OwnershipSemantic) {
+		_configureOwnershipSemantic(semantic)
+	}
+
 	let _subscribe: (_ onChunk: @escaping (T) -> Void) -> Scope
 	let _addDownstreamDisposable: (IDisposable) -> ()
+	let _addUpstreamDisposable: (IDisposable) -> ()
+	let _addDisposable: (IDisposable) -> ()
 	let _dispose: () -> ()
+	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> ()
 }
 
 public struct WriteableStream<T>: IWriteableStream

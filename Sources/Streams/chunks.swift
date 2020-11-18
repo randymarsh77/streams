@@ -8,12 +8,11 @@ public extension IReadableStream
 	}
 
 	func overlappingChunks(of: Int, advancingBy: Int) -> ReadableStream<Array<Self.ChunkType>> {
-		let overlappingChunkStream = OverlappingChunkStream<ChunkType>(of, advancingBy)
-		_ = self.chunks(of: advancingBy).subscribe {
-			overlappingChunkStream.accumulate($0)
+		configureDisposal(OverlappingChunkStream<ChunkType>(of, advancingBy)) { overlappingChunkStream in
+			self.chunks(of: advancingBy).subscribe {
+				overlappingChunkStream.accumulate($0)
+			}
 		}
-		addDownstreamDisposable(overlappingChunkStream)
-		return ReadableStream(overlappingChunkStream)
 	}
 }
 
