@@ -38,10 +38,11 @@ public class Stream<T> : IStream
 
 	func removeSubscriber(subscriber: Subscriber<ChunkType>) -> Void
 	{
-		let i = self.subscribers.firstIndex(where: { (x) -> Bool in
+		if let i = self.subscribers.firstIndex(where: { (x) -> Bool in
 			return x === subscriber
-		})
-		self.subscribers.remove(at: i!)
+		}) {
+			self.subscribers.remove(at: i)
+		}
 	}
 
 	public func addDownstreamDisposable(_ disposable: IDisposable) {
