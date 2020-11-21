@@ -1,15 +1,29 @@
+public enum StreamConfigurationError : Error
+{
+	case InvalidChunkSize
+	case InvalidOverlap
+}
+
 public extension IReadableStream
 {
-	func chunks(of: Int) -> ReadableStream<Array<Self.ChunkType>> {
+	func chunks(of: Int) throws -> ReadableStream<Array<Self.ChunkType>> {
+		guard of > 0 else {
+			throw StreamConfigurationError.InvalidChunkSize
+		}
+
 		let chunks = self.map { (elements: [ChunkType]) in
 			return elements.count == of ? (elements, []) : (nil, elements)
 		}
 		return chunks
 	}
 
-	func overlappingChunks(of: Int, advancingBy: Int) -> ReadableStream<Array<Self.ChunkType>> {
-		configureDisposal(OverlappingChunkStream<ChunkType>(of, advancingBy)) { overlappingChunkStream in
-			self.chunks(of: advancingBy).subscribe {
+	func overlappingChunks(of: Int, advancingBy: Int) throws -> ReadableStream<Array<Self.ChunkType>> {
+		guard advancingBy > 0 && advancingBy < of  else {
+			throw StreamConfigurationError.InvalidOverlap
+		}
+
+		return try configureDisposal(OverlappingChunkStream<ChunkType>(of, advancingBy)) { overlappingChunkStream in
+			try self.chunks(of: advancingBy).subscribe {
 				overlappingChunkStream.accumulate($0)
 			}
 		}
