@@ -1,8 +1,7 @@
 import IDisposable
 import Scope
 
-public protocol IReadableStream : IDisposable
-{
+public protocol IReadableStream: IDisposable {
 	associatedtype ChunkType
 
 	func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope
@@ -16,20 +15,17 @@ public protocol IReadableStream : IDisposable
 	func configureOwnershipSemantic(_ semantic: OwnershipSemantic)
 }
 
-public protocol IWriteableStream
-{
+public protocol IWriteableStream {
 	associatedtype ChunkType
 
-	func publish(_ chunk: ChunkType) -> Void
+	func publish(_ chunk: ChunkType)
 }
 
-public protocol IStream : IReadableStream, IWriteableStream
-{
+public protocol IStream: IReadableStream, IWriteableStream {
 	associatedtype ChunkType
 }
 
-public struct ReadableStream<T>: IReadableStream
-{
+public struct ReadableStream<T>: IReadableStream {
 	public typealias ChunkType = T
 
 	public init<S: IReadableStream>(_ delegate: S) where S.ChunkType == T {
@@ -71,22 +67,21 @@ public struct ReadableStream<T>: IReadableStream
 	}
 
 	let _subscribe: (_ onChunk: @escaping (T) -> Void) -> Scope
-	let _addDownstreamDisposable: (IDisposable) -> ()
-	let _addUpstreamDisposable: (IDisposable) -> ()
-	let _addDisposable: (IDisposable) -> ()
-	let _dispose: () -> ()
-	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> ()
+	let _addDownstreamDisposable: (IDisposable) -> Void
+	let _addUpstreamDisposable: (IDisposable) -> Void
+	let _addDisposable: (IDisposable) -> Void
+	let _dispose: () -> Void
+	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> Void
 }
 
-public struct WriteableStream<T>: IWriteableStream
-{
+public struct WriteableStream<T>: IWriteableStream {
 	public typealias ChunkType = T
 
 	public init<S: IWriteableStream>(_ delegate: S) where S.ChunkType == T {
 		_publish = delegate.publish
 	}
 
-	public func publish(_ chunk: T) -> Void {
+	public func publish(_ chunk: T) {
 		_publish(chunk)
 	}
 

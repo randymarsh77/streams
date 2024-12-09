@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
@@ -7,15 +7,16 @@ let package = Package(
 		.library(
 			name: "Streams",
 			targets: ["Streams"]
-		),
+		)
 	],
 	dependencies: [
-		.package(url: "https://github.com/randymarsh77/scope", .branch("master")),
+		.package(url: "https://github.com/randymarsh77/scope", branch: "master")
 	],
 	targets: [
 		.target(
 			name: "Streams",
-			dependencies: ["Scope"]
+			dependencies: [.product(name: "Scope", package: "Scope")]
 		),
+		.testTarget(name: "StreamsTests", dependencies: ["Streams"]),
 	]
 )

@@ -4,13 +4,12 @@ public typealias ManyToOneMapping<S, T> = ([S]) -> (T?, [S])
 
 public typealias OneToManyMapping<S, T> = (S) -> [T]
 
-public typealias MutatingMapping<S> = (_ :inout S) -> ()
+public typealias MutatingMapping<S> = (_: inout S) -> Void
 
-public typealias MutatingOneToOneMapping<S, T> = (_ :inout S) -> T
+public typealias MutatingOneToOneMapping<S, T> = (_: inout S) -> T
 
-public extension IReadableStream
-{
-	func map<T>(_ mapping: @escaping OneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+extension IReadableStream {
+	public func map<T>(_ mapping: @escaping OneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
 		configureDisposal(Stream()) { mapped in
 			self.subscribe { data in
 				mapped.publish(mapping(data))
@@ -18,7 +17,7 @@ public extension IReadableStream
 		}
 	}
 
-	func map<T>(_ mapping: @escaping ManyToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+	public func map<T>(_ mapping: @escaping ManyToOneMapping<ChunkType, T>) -> ReadableStream<T> {
 		configureDisposal(ManyToOneMappingStream(mapping)) { mapped in
 			self.subscribe { data in
 				mapped.accumulate(data)
@@ -26,7 +25,7 @@ public extension IReadableStream
 		}
 	}
 
-	func map<T>(_ mapping: @escaping OneToManyMapping<ChunkType, T>) -> ReadableStream<T> {
+	public func map<T>(_ mapping: @escaping OneToManyMapping<ChunkType, T>) -> ReadableStream<T> {
 		configureDisposal(Stream()) { mapped in
 			self.subscribe { data in
 				let many = mapping(data)
@@ -37,7 +36,7 @@ public extension IReadableStream
 		}
 	}
 
-	func map(_ mapping: @escaping MutatingMapping<ChunkType>) -> ReadableStream<ChunkType> {
+	public func map(_ mapping: @escaping MutatingMapping<ChunkType>) -> ReadableStream<ChunkType> {
 		configureDisposal(Stream()) { mapped in
 			self.subscribe { data in
 				var mutableData = data
@@ -47,7 +46,9 @@ public extension IReadableStream
 		}
 	}
 
-	func map<T>(_ mapping: @escaping MutatingOneToOneMapping<ChunkType, T>) -> ReadableStream<T> {
+	public func map<T>(_ mapping: @escaping MutatingOneToOneMapping<ChunkType, T>)
+		-> ReadableStream<T>
+	{
 		configureDisposal(Stream()) { mapped in
 			self.subscribe { data in
 				var mutableData = data
@@ -57,8 +58,7 @@ public extension IReadableStream
 	}
 }
 
-internal class ManyToOneMappingStream<S, T> : Stream<T>
-{
+internal class ManyToOneMappingStream<S, T>: Stream<T> {
 	internal init(_ map: @escaping ManyToOneMapping<S, T>) {
 		_map = map
 	}
@@ -67,7 +67,7 @@ internal class ManyToOneMappingStream<S, T> : Stream<T>
 		_accumulator.append(data)
 		let (result, leftovers) = _map(_accumulator)
 		_accumulator = leftovers
-		if (result != nil) {
+		if result != nil {
 			publish(result!)
 		}
 	}

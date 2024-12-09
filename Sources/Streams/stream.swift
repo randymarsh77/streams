@@ -1,17 +1,19 @@
 import IDisposable
 import Scope
 
-public class Stream<T> : IStream
-{
+open class Stream<T>: IStream {
 	public typealias ChunkType = T
 
 	public init() {
 	}
 
 	public func dispose() {
-		let disposables = self.disposables
-			+ (ownershipSemantic == .Chained || ownershipSemantic == .Source ? self.downstreamDisposables : [])
-			+ (ownershipSemantic == .Chained || ownershipSemantic == .Sink ? self.upstreamDisposables : [])
+		let disposables =
+			self.disposables
+			+ (ownershipSemantic == .chained || ownershipSemantic == .source
+				? self.downstreamDisposables : [])
+			+ (ownershipSemantic == .chained || ownershipSemantic == .sink
+				? self.upstreamDisposables : [])
 
 		self.subscribers = [Subscriber<ChunkType>]()
 		self.downstreamDisposables = [IDisposable]()
@@ -23,21 +25,19 @@ public class Stream<T> : IStream
 		}
 	}
 
-	public func publish(_ chunk: ChunkType) -> Void {
+	public func publish(_ chunk: ChunkType) {
 		for subscriber in self.subscribers {
 			subscriber.publish(chunk)
 		}
 	}
 
-	public func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope
-	{
+	public func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope {
 		let subscriber = Subscriber(callback: onChunk)
 		self.subscribers.append(subscriber)
 		return Scope(dispose: { self.removeSubscriber(subscriber: subscriber) })
 	}
 
-	func removeSubscriber(subscriber: Subscriber<ChunkType>) -> Void
-	{
+	func removeSubscriber(subscriber: Subscriber<ChunkType>) {
 		if let i = self.subscribers.firstIndex(where: { (x) -> Bool in
 			return x === subscriber
 		}) {
@@ -65,20 +65,17 @@ public class Stream<T> : IStream
 	var disposables: [IDisposable] = [IDisposable]()
 	var downstreamDisposables: [IDisposable] = [IDisposable]()
 	var upstreamDisposables: [IDisposable] = [IDisposable]()
-	var ownershipSemantic = OwnershipSemantic.Chained
+	var ownershipSemantic = OwnershipSemantic.chained
 }
 
-internal class Subscriber<T>
-{
+internal class Subscriber<T> {
 	var callback: (_ chunk: T) -> Void
 
-	internal init(callback: @escaping (_ chunk: T) -> Void)
-	{
+	internal init(callback: @escaping (_ chunk: T) -> Void) {
 		self.callback = callback
 	}
 
-	internal func publish(_ chunk: T) -> Void
-	{
+	internal func publish(_ chunk: T) {
 		self.callback(chunk)
 	}
 }

@@ -1,34 +1,31 @@
 import IDisposable
 import Scope
 
-public protocol IReadableEventingStream : IReadableStream
-{
+public protocol IReadableEventingStream: IReadableStream {
 	associatedtype ChunkType
 	associatedtype EventType
 
 	func on(onEvent: @escaping (_ event: EventType) -> Void) -> Scope
 }
 
-public protocol IWriteableEventingStream : IWriteableStream
-{
+public protocol IWriteableEventingStream: IWriteableStream {
 	associatedtype ChunkType
 	associatedtype EventType
 
-	func raise(_ event: EventType) -> Void
+	func raise(_ event: EventType)
 }
 
-public protocol IEventingStream : IReadableEventingStream, IWriteableEventingStream
-{
+public protocol IEventingStream: IReadableEventingStream, IWriteableEventingStream {
 	associatedtype ChunkType
 	associatedtype EventType
 }
 
-public struct ReadableEventingStream<S, T> : IReadableEventingStream
-{
+public struct ReadableEventingStream<S, T>: IReadableEventingStream {
 	public typealias EventType = S
 	public typealias ChunkType = T
 
-	public init<U: IReadableEventingStream>(_ delegate: U) where U.ChunkType == ChunkType, U.EventType == EventType {
+	public init<U: IReadableEventingStream>(_ delegate: U)
+	where U.ChunkType == ChunkType, U.EventType == EventType {
 		_subscribe = delegate.subscribe
 		_on = delegate.on
 		_addDownstreamDisposable = delegate.addDownstreamDisposable
@@ -72,20 +69,20 @@ public struct ReadableEventingStream<S, T> : IReadableEventingStream
 	let _addUpstreamDisposable: (IDisposable) -> Void
 	let _addDisposable: (IDisposable) -> Void
 	let _dispose: () -> Void
-	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> ()
+	let _configureOwnershipSemantic: (_ semantic: OwnershipSemantic) -> Void
 }
 
-public struct WriteableEventingStream<S, T> : IWriteableEventingStream
-{
+public struct WriteableEventingStream<S, T>: IWriteableEventingStream {
 	public typealias EventType = S
 	public typealias ChunkType = T
 
-	public init<U: IWriteableEventingStream>(_ delegate: U) where U.ChunkType == ChunkType, U.EventType == EventType {
+	public init<U: IWriteableEventingStream>(_ delegate: U)
+	where U.ChunkType == ChunkType, U.EventType == EventType {
 		_publish = delegate.publish
 		_raise = delegate.raise
 	}
 
-	public func publish(_ chunk: ChunkType) -> Void {
+	public func publish(_ chunk: ChunkType) {
 		_publish(chunk)
 	}
 
@@ -97,14 +94,12 @@ public struct WriteableEventingStream<S, T> : IWriteableEventingStream
 	let _raise: (_ event: EventType) -> Void
 }
 
-public enum EventingStreamContext<S, T>
-{
-	case Event(S)
-	case Data(T)
+public enum EventingStreamContext<S, T> {
+	case event(S)
+	case data(T)
 }
 
-public class EventingStream<S, T> : IEventingStream
-{
+public class EventingStream<S, T>: IEventingStream {
 	public typealias EventType = S
 	public typealias ChunkType = T
 
@@ -118,38 +113,32 @@ public class EventingStream<S, T> : IEventingStream
 		base.dispose()
 	}
 
-	public func raise(_ event: EventType)
-	{
-		base.publish(.Event(event))
+	public func raise(_ event: EventType) {
+		base.publish(.event(event))
 	}
 
-	public func publish(_ chunk: ChunkType) -> Void
-	{
-		base.publish(.Data(chunk))
+	public func publish(_ chunk: ChunkType) {
+		base.publish(.data(chunk))
 	}
 
-	public func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope
-	{
+	public func subscribe(_ onChunk: @escaping (_ chunk: ChunkType) -> Void) -> Scope {
 		return base.subscribe { (context: EventingStreamContext<S, T>) in
-			switch (context)
+			switch context
 			{
-			case .Data(let received):
+			case .data(let received):
 				onChunk(received)
-				break
 			default:
 				break
 			}
 		}
 	}
 
-	public func on(onEvent: @escaping (_ event: EventType) -> Void) -> Scope
-	{
+	public func on(onEvent: @escaping (_ event: EventType) -> Void) -> Scope {
 		return base.subscribe { (context: EventingStreamContext<S, T>) in
-			switch (context)
+			switch context
 			{
-			case .Event(let received):
+			case .event(let received):
 				onEvent(received)
-				break
 			default:
 				break
 			}
@@ -178,12 +167,11 @@ public class EventingStream<S, T> : IEventingStream
 	}
 }
 
-public extension IStream
-{
-	func asEventing<T>() -> EventingStream<T, Self.ChunkType> {
+extension IStream {
+	public func asEventing<T>() -> EventingStream<T, Self.ChunkType> {
 		let proxy: Stream<EventingStreamContext<T, Self.ChunkType>> = Stream()
 		let unsubscribe = self.subscribe { (chunk) in
-			proxy.publish(.Data(chunk))
+			proxy.publish(.data(chunk))
 		}
 		return EventingStream(proxy)
 			.disposeWith(unsubscribe)

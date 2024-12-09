@@ -1,25 +1,24 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "IDisposable",
-        "repositoryURL": "https://github.com/randymarsh77/idisposable",
-        "state": {
-          "branch": "master",
-          "revision": "9d2d4c032fdca4d0d81ec191bfcc71c91e88b178",
-          "version": null
-        }
-      },
-      {
-        "package": "Scope",
-        "repositoryURL": "https://github.com/randymarsh77/scope",
-        "state": {
-          "branch": "master",
-          "revision": "3c797592601ba184e0b3efec6f3c9fba125a000c",
-          "version": null
-        }
+  "originHash" : "6cb85c9de0db33119081f5756d62f7341f889c6f5018676b14f13c3a2de49039",
+  "pins" : [
+    {
+      "identity" : "idisposable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/randymarsh77/idisposable",
+      "state" : {
+        "branch" : "master",
+        "revision" : "fc259ea73b73ef5f84d7c10258961a9b75074078"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "scope",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/randymarsh77/scope",
+      "state" : {
+        "branch" : "master",
+        "revision" : "974fb1ee39e435a213885eb9eb423bf09a8ee80a"
+      }
+    }
+  ],
+  "version" : 3
 }

@@ -1,22 +1,22 @@
 public enum OwnershipSemantic {
-	case Chained
-	case Source
-	case Sink
-	case Orphaned
+	case chained
+	case source
+	case sink
+	case orphaned
 }
 
-public extension IReadableStream
-{
-	func withOwnershipSemantic<T>(_ semantic: OwnershipSemantic) -> ReadableStream<T> where T == Self.ChunkType {
+extension IReadableStream {
+	public func withOwnershipSemantic<T>(_ semantic: OwnershipSemantic) -> ReadableStream<T>
+	where T == Self.ChunkType {
 		self.configureOwnershipSemantic(semantic)
 		return ReadableStream(self)
 	}
 
-	func asSource<T>() -> ReadableStream<T> where T == Self.ChunkType {
+	public func asSource<T>() -> ReadableStream<T> where T == Self.ChunkType {
 		let input = Stream<T>()
 		let unsubscribe = self.pipe(to: input)
 		return ReadableStream(input)
-			.withOwnershipSemantic(.Source)
+			.withOwnershipSemantic(.source)
 			.disposeWith(unsubscribe)
 	}
 }

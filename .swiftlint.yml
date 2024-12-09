@@ -1,0 +1,15 @@
+included: 
+  - Sources
+  - Tests
+  - Package.swift
+
+line_length:
+  warning: 500
+  error: 500
+
+disabled_rules:
+  - trailing_comma # SourceKit formatter doesn't add/remove these consistently
+  - no_space_in_method_call # False positive with trailing closure syntax
+  - identifier_name
+  - opening_brace
+  - closure_parameter_position
